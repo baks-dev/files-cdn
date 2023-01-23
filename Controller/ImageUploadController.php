@@ -18,6 +18,7 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
+use BaksDev\Core\Services\Security\RoleSecurity;
 use GdImage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[RoleSecurity('ROLE_CDN')]
 class ImageUploadController extends AbstractController
 {
     #[Route('/cdn/upload/image', name: 'cdn.image.upload', methods: ['GET', 'POST'])]
@@ -36,21 +38,12 @@ class ImageUploadController extends AbstractController
       Request $request,
       Filesystem $filesystem,
       MessageBusInterface $bus,
-        
-        //      string $module,
-        //      string $dir,
-        //      string $id
     ) : Response
     {
-        
-        
-        
         /* Директория загрузки файла */
         $uploadDir = $request->get('path');
         $uploadDir = $this->getParameter($uploadDir).$request->get('dir');
-        
-        
-        
+		
         /**
          * Файл изображения
          * @var UploadedFile $file

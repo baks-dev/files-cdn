@@ -18,6 +18,7 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
+use BaksDev\Core\Services\Security\RoleSecurity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -28,6 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[RoleSecurity('ROLE_CDN')]
 class FileUploadController extends AbstractController
 {
     #[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
