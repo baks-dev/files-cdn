@@ -32,50 +32,52 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_CDN')]
 class FileUploadController extends AbstractController
 {
-    #[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
-    public function index(
-      Request $request,
-      Filesystem $filesystem,
-      MessageBusInterface $bus,
-    ) : Response
-    {
-    
-        /* Директория загрузки файла */
-        $uploadDir = $request->get('dir');
-        $uploadDir = $this->getParameter($uploadDir).$request->get('id');
-    
-    
-        /**
-         * Файл загрузки
-         * @var UploadedFile $file
-         */
-        $file = $request->files->get('file');
-    
-        /* проверяем наличие папки, если нет - создаем */
-        if(!$filesystem->exists($uploadDir))
-        {
-            try
-            {
-                $filesystem->mkdir($uploadDir);
-            }
-            catch(IOExceptionInterface $exception)
-            {
-                return $this->json(
-                  [
-                    'status' => 500,
-                    'message' => "An error occurred while creating your directory"
-                  ], 500);
-            }
-        }
-    
-        /* Если файл не существует */
-        if(!file_exists($uploadDir.'/'.$file->getClientOriginalName()))
-        {
-            $file->move($uploadDir, $file->getClientOriginalName());
-        }
+	#[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
+	public function index(
+		Request $request,
+		Filesystem $filesystem,
+		MessageBusInterface $bus,
+	) : Response
+	{
 		
-        return $this->json(['status' => 200, 'message' => 'success'], 200);
+		/* Директория загрузки файла */
+		$uploadDir = $request->get('dir');
+		$uploadDir = $this->getParameter($uploadDir).$request->get('id');
 		
-    }
-    
+		/**
+		 * Файл загрузки
+		 *
+		 * @var UploadedFile $file
+		 */
+		$file = $request->files->get('file');
+		
+		/* проверяем наличие папки, если нет - создаем */
+		if(!$filesystem->exists($uploadDir))
+		{
+			try
+			{
+				$filesystem->mkdir($uploadDir);
+			}
+			catch(IOExceptionInterface $exception)
+			{
+				return $this->json(
+					[
+						'status' => 500,
+						'message' => "An error occurred while creating your directory",
+					],
+					500
+				);
+			}
+		}
+		
+		/* Если файл не существует */
+		if(!file_exists($uploadDir.'/'.$file->getClientOriginalName()))
+		{
+			$file->move($uploadDir, $file->getClientOriginalName());
+		}
+		
+		return $this->json(['status' => 200, 'message' => 'success'], 200);
+		
+	}
+	
 }
