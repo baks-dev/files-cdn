@@ -1,6 +1,6 @@
 {
   "name": "baks-dev/files-cdn",
-  "description": "Модуль CDN айловых ресурсов",
+  "description": "Модуль CDN файловых ресурсов",
   "homepage": "https://github.com/baks-dev/files-cdn",
   "keywords": [
     "bundle",
