@@ -28,15 +28,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\ExpressionLanguage\Expression;
 
-#[RoleSecurity('ROLE_CDN')]
+#[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class FileUploadController extends AbstractController
 {
 	#[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
 	public function index(
 		Request $request,
 		Filesystem $filesystem,
-		MessageBusInterface $bus,
 	) : Response
 	{
 		

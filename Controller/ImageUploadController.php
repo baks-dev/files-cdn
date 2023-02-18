@@ -29,20 +29,40 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\ExpressionLanguage\Expression;
 
-#[RoleSecurity('ROLE_CDN')]
+#[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class ImageUploadController extends AbstractController
 {
-	#[Route('/cdn/upload/image', name: 'cdn.image.upload', methods: ['GET', 'POST'])]
+	#[Route('/cdn/upload/image', name: 'cdn.image.upload', methods: ['POST'])]
 	public function index(
 		Request $request,
 		Filesystem $filesystem,
-		MessageBusInterface $bus,
 	) : Response
 	{
 		/* Директория загрузки файла */
 		$uploadDir = $request->get('path');
 		$uploadDir = $this->getParameter($uploadDir).$request->get('dir');
+		
+		/* Проверяем наличие папки, если нет - создаем */
+		if(!$filesystem->exists($uploadDir))
+		{
+			try
+			{
+				$filesystem->mkdir($uploadDir);
+			}
+			catch(IOExceptionInterface $exception)
+			{
+				return $this->json(
+					[
+						'status' => 500,
+						'message' => "An error occurred while creating your directory",
+					],
+					500
+				);
+			}
+		}
 		
 		/**
 		 * Файл изображения
@@ -70,11 +90,12 @@ class ImageUploadController extends AbstractController
 			2,  // [] jpg
 			3,  // [] png
 			6,   // [] bmp
+			18,   // [] webp
 		];
 		
 		if(!in_array($type, $allowedTypes, true))
 		{
-			return $this->json(['status' => 500, 'message' => 'Error type imaes'], 500);
+			return $this->json(['status' => 500, 'message' => 'Error type images'], 500);
 		}
 		
 		/** @var GdImage $img */
@@ -92,6 +113,9 @@ class ImageUploadController extends AbstractController
 				break;
 			case 6 :
 				$img = imageCreateFromBmp($filepath);
+				break;
+			case 18 :
+				$img = imageCreateFromWebp($filepath);
 				break;
 		}
 		

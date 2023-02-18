@@ -23,7 +23,11 @@
   ],
   "require": {
     "php": ">=8.1",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "symfony/form": "^6.2",
+    "symfony/monolog-bundle": "^3.8",
+    "symfony/security-bundle": "^6.2",
+    "symfony/expression-language": "^6.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
