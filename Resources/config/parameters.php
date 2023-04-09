@@ -72,4 +72,29 @@ return static function(ContainerConfigurator $configurator)
 		'%kernel.project_dir%/public/upload/product_offer_variation_images/'
 	);
 	
+	
+	/** ОБЛОЖКИ способов оплаты */
+	$configurator->parameters()->set(
+		'payment_cover',
+		'%kernel.project_dir%/public/upload/payment_cover/'
+	);
+
+	
+	/** ОБЛОЖКИ контактных регионов */
+	$configurator->parameters()->set(
+		'contacts_region_call_cover',
+		'%kernel.project_dir%/public/upload/contacts_region_call_cover/'
+	);
+	
+	/** ОБЛОЖКИ способа доставки */
+	$configurator->parameters()->set(
+		'delivery_cover',
+		'%kernel.project_dir%/public/upload/delivery_cover/'
+	);
+	
+	/** ОБЛОЖКИ брендов */
+	$configurator->parameters()->set(
+		'brand_cover',
+		'%kernel.project_dir%/public/upload/brand_cover/'
+	);
 };
