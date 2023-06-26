@@ -38,11 +38,7 @@
       "BaksDev\\Files\\Cdn\\": ""
     }
   },
-  "autoload-dev": {
-    "psr-4": {
-      "BaksDev\\Files\\Cdn\\Tests\\": "Tests/"
-    }
-  },
+
   "config": {
     "sort-packages": true,
     "allow-plugins": {

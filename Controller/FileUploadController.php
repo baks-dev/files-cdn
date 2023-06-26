@@ -18,67 +18,55 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
-use BaksDev\Core\Services\Security\RoleSecurity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\ExpressionLanguage\Expression;
 
 #[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class FileUploadController extends AbstractController
 {
-	#[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
-	public function index(
-		Request $request,
-		Filesystem $filesystem,
-	) : Response
-	{
-		
-		/* Директория загрузки файла */
-		$uploadDir = $request->get('dir');
-		$uploadDir = $this->getParameter($uploadDir).$request->get('id');
-		
-		/**
-		 * Файл загрузки
-		 *
-		 * @var UploadedFile $file
-		 */
-		$file = $request->files->get('file');
-		
-		/* проверяем наличие папки, если нет - создаем */
-		if(!$filesystem->exists($uploadDir))
-		{
-			try
-			{
-				$filesystem->mkdir($uploadDir);
-			}
-			catch(IOExceptionInterface $exception)
-			{
-				return $this->json(
-					[
-						'status' => 500,
-						'message' => "An error occurred while creating your directory",
-					],
-					500
-				);
-			}
-		}
-		
-		/* Если файл не существует */
-		if(!file_exists($uploadDir.'/'.$file->getClientOriginalName()))
-		{
-			$file->move($uploadDir, $file->getClientOriginalName());
-		}
-		
-		return $this->json(['status' => 200, 'message' => 'success'], 200);
-		
-	}
-	
+    #[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
+    public function index(
+        Request $request,
+        Filesystem $filesystem,
+    ): Response {
+        // Директория загрузки файла
+        $uploadDir = $request->get('dir');
+        $uploadDir = $this->getParameter($uploadDir).$request->get('id');
+
+        /**
+         * Файл загрузки.
+         *
+         * @var UploadedFile $file
+         */
+        $file = $request->files->get('file');
+
+        // проверяем наличие папки, если нет - создаем
+        if (!$filesystem->exists($uploadDir)) {
+            try {
+                $filesystem->mkdir($uploadDir);
+            } catch (IOExceptionInterface $exception) {
+                return $this->json(
+                    [
+                        'status' => 500,
+                        'message' => 'An error occurred while creating your directory',
+                    ],
+                    500
+                );
+            }
+        }
+
+        // Если файл не существует
+        if (!file_exists($uploadDir.'/'.$file->getClientOriginalName())) {
+            $file->move($uploadDir, $file->getClientOriginalName());
+        }
+
+        return $this->json(['status' => 200, 'message' => 'success'], 200);
+    }
 }
