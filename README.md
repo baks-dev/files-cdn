@@ -66,15 +66,11 @@ return static function(SecurityConfig $config) {
 
 ```
 ###> CDN ###
-CDN_HOST=https://cdn.example.host
+CDN_HOST=cdn.example.host
 CDN_USER=<user>
 CDN_PASS=<you-plain-password>
 
 ```
-
-## Журнал изменений ![Changelog](https://img.shields.io/badge/changelog-yellow)
-
-О том, что изменилось за последнее время, обратитесь к [CHANGELOG](CHANGELOG.md) за дополнительной информацией.
 
 ## Лицензия ![License](https://img.shields.io/badge/MIT-green)
 
