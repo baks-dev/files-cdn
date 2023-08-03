@@ -18,28 +18,32 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
-use GdImage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[AsController]
 #[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class ImageUploadController extends AbstractController
 {
-    #[Route('/cdn/upload/image', name: 'cdn.image.upload', methods: ['POST'])]
+    #[Route('/cdn/upload/image/{entity}', name: 'cdn.image.upload', methods: ['POST'])]
     public function index(
+        #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
+        string $entity,
         Request $request,
         Filesystem $filesystem,
     ): Response {
+
         // Директория загрузки файла
-        $uploadDir = $request->get('path');
-        $uploadDir = $this->getParameter($uploadDir).$request->get('dir');
+        $uploadDir = $upload.$entity.'/'.$request->get('dir');
 
         // Проверяем наличие папки, если нет - создаем
         if (!$filesystem->exists($uploadDir)) {
@@ -62,8 +66,6 @@ class ImageUploadController extends AbstractController
          * @var UploadedFile $file
          */
         $file = $request->files->get('image');
-
-        // dd($file);
 
         // Если файл не существует
         if (!file_exists($uploadDir.'/'.$file->getClientOriginalName())) {
@@ -132,7 +134,7 @@ class ImageUploadController extends AbstractController
         imagewebp($img_medium, $uploadDir.'/'.$fileInfo['filename'].'.medium.webp', 80);
         imagedestroy($img_medium);
 
-        $img_small = $this->resize($img, 240);
+        $img_small = $this->resize($img, 300);
         imagewebp($img_small, $uploadDir.'/'.$fileInfo['filename'].'.small.webp', 80);
         imagedestroy($img_small);
 

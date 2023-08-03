@@ -19,26 +19,32 @@
 namespace BaksDev\Files\Cdn\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[AsController]
 #[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class FileUploadController extends AbstractController
 {
-    #[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
+    #[Route('/cdn/upload/file/{entity}', name: 'cdn.files.upload', methods: ['POST'])]
     public function index(
+        #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
+        string $entity,
         Request $request,
         Filesystem $filesystem,
-    ): Response {
+    ): Response
+    {
+
         // Директория загрузки файла
-        $uploadDir = $request->get('dir');
-        $uploadDir = $this->getParameter($uploadDir).$request->get('id');
+        $uploadDir = $upload.$entity.'/'.$request->get('id');
 
         /**
          * Файл загрузки.
@@ -48,10 +54,14 @@ class FileUploadController extends AbstractController
         $file = $request->files->get('file');
 
         // проверяем наличие папки, если нет - создаем
-        if (!$filesystem->exists($uploadDir)) {
-            try {
+        if(!$filesystem->exists($uploadDir))
+        {
+            try
+            {
                 $filesystem->mkdir($uploadDir);
-            } catch (IOExceptionInterface $exception) {
+            }
+            catch(IOExceptionInterface $exception)
+            {
                 return $this->json(
                     [
                         'status' => 500,
@@ -63,7 +73,8 @@ class FileUploadController extends AbstractController
         }
 
         // Если файл не существует
-        if (!file_exists($uploadDir.'/'.$file->getClientOriginalName())) {
+        if(!file_exists($uploadDir.'/'.$file->getClientOriginalName()))
+        {
             $file->move($uploadDir, $file->getClientOriginalName());
         }
 
