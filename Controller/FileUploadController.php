@@ -34,17 +34,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
 class FileUploadController extends AbstractController
 {
-    #[Route('/cdn/upload/file/{entity}', name: 'cdn.files.upload', methods: ['POST'])]
+    #[Route('/cdn/upload/file', name: 'cdn.files.upload', methods: ['POST'])]
     public function index(
         #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
-        string $entity,
         Request $request,
         Filesystem $filesystem,
     ): Response
     {
 
         // Директория загрузки файла
-        $uploadDir = $upload.$entity.'/'.$request->get('id');
+        $uploadDir = $upload.$request->get('dir');
+
+
+
 
         /**
          * Файл загрузки.
