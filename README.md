@@ -76,4 +76,3 @@ CDN_PASS=<you-plain-password>
 
 The MIT License (MIT). Обратитесь к [Файлу лицензии](LICENSE.md) за дополнительной информацией.
 
-
