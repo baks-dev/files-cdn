@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,39 +36,37 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AsController]
 #[IsGranted(new Expression('"ROLE_CDN" in role_names'))]
-class UploadController extends AbstractController
+class UploadController // extends AbstractController
 {
-    #[Route('/upload', name: 'cdn.upload', methods: ['POST'])]
+
+    #[Route('/cdn/upload', name: 'cdn.upload', methods: ['POST'])]
     public function index(
         #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
         Request $request,
         Filesystem $filesystem,
-    ): Response {
+    ): Response
+    {
+        $uploadDir = $upload.$request->get('dir');
 
+        /** Если существует директория - не создаем */
+        if($filesystem->exists($uploadDir))
+        {
+            return new JsonResponse([
+                'status' => 200,
+                'message' => 'success',
+            ], 200);
+        }
 
-
-
-
-        return new JsonResponse(['status' => 200, 'message' => 'success'], 200);
-
-
-
-        // Директория загрузки файла
-        $uploadDir = $upload.$entity.'/'.$request->get('dir');
-
-        // Проверяем наличие папки, если нет - создаем
-        if (!$filesystem->exists($uploadDir)) {
-            try {
-                $filesystem->mkdir($uploadDir);
-            } catch (IOExceptionInterface $exception) {
-                return $this->json(
-                    [
-                        'status' => 500,
-                        'message' => 'An error occurred while creating your directory',
-                    ],
-                    500
-                );
-            }
+        try
+        {
+            $filesystem->mkdir($uploadDir);
+        }
+        catch(IOExceptionInterface $exception)
+        {
+            return new JsonResponse([
+                'status' => 500,
+                'message' => 'An error occurred while creating your directory',
+            ], 500);
         }
 
         /**
@@ -77,15 +76,60 @@ class UploadController extends AbstractController
          */
         $file = $request->files->get('image');
 
-        // Если файл не существует
-        if (!file_exists($uploadDir.'/'.$file->getClientOriginalName())) {
-            $file->move($uploadDir, $file->getClientOriginalName());
+        /** Если имеется конвертируемый файл с указанной хеш-суммой  */
+        if(file_exists($uploadDir.'/original.webp'))
+        {
+            return new JsonResponse([
+                'status' => 200,
+                'message' => 'success',
+            ], 200);
         }
 
-        $fileInfo = pathinfo($uploadDir.'/'.$file->getClientOriginalName());
+        // Если файл не существует
+        //if (!file_exists($uploadDir.'/'.$file->getClientOriginalName())) {
+        $file->move($uploadDir, $file->getClientOriginalName());
+        //$fileInfo = pathinfo($uploadDir.'/'.$file->getClientOriginalName());
 
-        /** Получаем файл для конвертации  */
-        $filepath = $uploadDir.'/'.$fileInfo['basename'];
+        // /** Получаем файл для конвертации  */
+        //$filepath = $uploadDir.'/'.$fileInfo['basename'];
+        $img = $this->imageCreate($uploadDir.'/'.$file->getClientOriginalName());
+
+        // Сохраняем оригинал
+
+        imagesavealpha($img, true);
+        imagepalettetotruecolor($img);
+        imagealphablending($img, false);
+        imagewebp($img, $uploadDir.'/original.webp', 100);
+
+        $img_large = $this->resize($img, 1200);
+        imagewebp($img_large, $uploadDir.'/large.webp', 80);
+        imagedestroy($img_large);
+
+        $img_medium = $this->resize($img, 640);
+        imagewebp($img_medium, $uploadDir.'/medium.webp', 80);
+        imagedestroy($img_medium);
+
+        $img_small = $this->resize($img, 300);
+        imagewebp($img_small, $uploadDir.'/small.webp', 80);
+        imagedestroy($img_small);
+
+        $img_min = $this->resize($img, 60);
+        imagewebp($img_min, $uploadDir.'/min.webp', 80);
+        imagedestroy($img_min);
+
+        /** Удаляем оригинал файла */
+        $filesystem->remove($uploadDir.'/'.$file->getClientOriginalName());
+
+        return new JsonResponse([
+            'status' => 200,
+            'message' => 'success',
+        ], 200);
+    }
+
+
+
+    public function imageCreate($filepath) : mixed
+    {
         $type = exif_imagetype($filepath); // [] if you don't have exif you could use getImageSize()
 
         $allowedTypes = [
@@ -96,64 +140,20 @@ class UploadController extends AbstractController
             18,   // [] webp
         ];
 
-        if (!in_array($type, $allowedTypes, true)) {
-            return $this->json(['status' => 500, 'message' => 'Error type images'], 500);
+        if(!in_array($type, $allowedTypes, true))
+        {
+            throw new FileException('Error type images');
         }
 
-        // @var GdImage $img
-
-        switch ($type) {
-            case 1:
-                $img = imageCreateFromGif($filepath);
-
-                break;
-
-            case 2:
-                $img = imageCreateFromJpeg($filepath);
-
-                break;
-
-            case 3:
-                $img = imageCreateFromPng($filepath);
-
-                break;
-
-            case 6:
-                $img = imageCreateFromBmp($filepath);
-
-                break;
-
-            case 18:
-                $img = imageCreateFromWebp($filepath);
-
-                break;
-        }
-
-        // Сохраняем оригинал
-
-        imagesavealpha($img, true);
-        imagepalettetotruecolor($img);
-        imagealphablending($img, false);
-        imagewebp($img, $uploadDir.'/'.$fileInfo['filename'].'.webp', 100);
-
-        $img_large = $this->resize($img, 1200);
-        imagewebp($img_large, $uploadDir.'/'.$fileInfo['filename'].'.large.webp', 80);
-        imagedestroy($img_large);
-
-        $img_medium = $this->resize($img, 640);
-        imagewebp($img_medium, $uploadDir.'/'.$fileInfo['filename'].'.medium.webp', 80);
-        imagedestroy($img_medium);
-
-        $img_small = $this->resize($img, 300);
-        imagewebp($img_small, $uploadDir.'/'.$fileInfo['filename'].'.small.webp', 80);
-        imagedestroy($img_small);
-
-        $img_min = $this->resize($img, 60);
-        imagewebp($img_min, $uploadDir.'/'.$fileInfo['filename'].'.min.webp', 80);
-        imagedestroy($img_min);
-
-        return $this->json(['status' => 200, 'message' => 'success'], 200);
+        return match ($type) {
+            1 => imageCreateFromGif($filepath),
+            2 => imageCreateFromJpeg($filepath),
+            3 => imageCreateFromPng($filepath),
+            6 => imageCreateFromBmp($filepath),
+            18 => imageCreateFromWebp($filepath),
+        };
     }
+
 
     public function resize($img, $height)
     {
