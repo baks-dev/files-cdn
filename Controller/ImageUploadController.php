@@ -18,6 +18,7 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -41,6 +42,7 @@ class ImageUploadController
         #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
         Request $request,
         Filesystem $filesystem,
+        LoggerInterface $logger,
     ): Response
     {
 
@@ -48,6 +50,8 @@ class ImageUploadController
 
         if(empty($uploadDir))
         {
+            $logger->critical('Необходимо передать параметр dir', [__FILE__.':'.__LINE__]);
+
             return new JsonResponse([
                 'status' => 500,
                 'message' => 'An error occurred while creating your directory',
@@ -68,8 +72,14 @@ class ImageUploadController
         {
             $filesystem->mkdir($uploadDir);
         }
-        catch(IOExceptionInterface $exception)
+        catch(IOExceptionInterface)
         {
+            $logger->critical('Произошла ошибка при создании каталога',
+                [
+                    __FILE__.':'.__LINE__,
+                    'dir' => $uploadDir
+                ]);
+
             return new JsonResponse([
                 'status' => 500,
                 'message' => 'An error occurred while creating your directory',
