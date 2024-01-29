@@ -168,6 +168,8 @@ class ImageUploadController
 
     public function resize($img, $height)
     {
+        /* TODO: https://copyprogramming.com/howto/writing-exif-data-in-php */
+
         $getWidth = imagesx($img);
         $getHeight = imagesy($img);
 
