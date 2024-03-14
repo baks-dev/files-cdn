@@ -18,12 +18,14 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -39,13 +41,22 @@ class FileUploadController extends AbstractController
         #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
         Request $request,
         Filesystem $filesystem,
+        LoggerInterface $logger,
     ): Response
     {
 
         // Директория загрузки файла
         $uploadDir = $upload.$request->get('dir');
 
+        if(empty($uploadDir))
+        {
+            $logger->critical('Необходимо передать параметр dir', [__FILE__.':'.__LINE__]);
 
+            return new JsonResponse([
+                'status' => 500,
+                'message' => 'An error occurred while creating your directory',
+            ], 500);
+        }
 
 
         /**
@@ -54,6 +65,18 @@ class FileUploadController extends AbstractController
          * @var UploadedFile $file
          */
         $file = $request->files->get('file');
+
+        if(!$file)
+        {
+            return $this->json(
+                [
+                    'status' => 500,
+                    'message' => 'You must select a download file',
+                ],
+                500
+            );
+        }
+
 
         // проверяем наличие папки, если нет - создаем
         if(!$filesystem->exists($uploadDir))

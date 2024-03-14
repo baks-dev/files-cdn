@@ -88,10 +88,21 @@ class ImageUploadController
 
         /**
          * Файл изображения.
-         *
          * @var UploadedFile $file
          */
         $file = $request->files->get('image');
+
+        /** Если имеется конвертируемый файл с указанной хеш-суммой  */
+        if(!$file)
+        {
+            $logger->critical('Необходимо передать файл изображения', [__FILE__.':'.__LINE__]);
+
+            return new JsonResponse([
+                'status' => 500,
+                'message' => 'You need to transfer an image file',
+            ], 500);
+        }
+
 
         /** Если имеется конвертируемый файл с указанной хеш-суммой  */
         if(file_exists($uploadDir.'/original.webp'))
