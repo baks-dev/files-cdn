@@ -13,6 +13,14 @@ $ composer require baks-dev/files-cdn
 
 ## Настройки
 
+Добавить директорию и установить права для загрузки файлов:
+
+``` bash
+$ sudo mkdir <path_to_project>/public/upload
+$ chown -R unit:unit <path_to_project>/public/upload
+
+``` 
+
 Генерируем дайджест пароля:
 
 ``` bash
