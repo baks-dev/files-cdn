@@ -19,18 +19,7 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
 class BaksDevFilesCdnBundle extends AbstractBundle
 {
-    public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
-    {
-        $path = __DIR__.'/Resources/config/';
+    public const NAMESPACE = __NAMESPACE__.'\\';
 
-        foreach (new DirectoryIterator($path) as $config) {
-            if ($config->isDot() || $config->isDir()) {
-                continue;
-            }
-
-            if ($config->isFile() && 'routes.php' !== $config->getFilename()) {
-                $container->import($config->getPathname());
-            }
-        }
-    }
+    public const PATH = __DIR__.DIRECTORY_SEPARATOR;
 }
