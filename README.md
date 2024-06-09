@@ -3,9 +3,12 @@
 [![Version](https://img.shields.io/badge/version-7.1.1-blue)](https://github.com/baks-dev/files-cdn/releases)
 ![php 8.3+](https://img.shields.io/badge/php-min%208.3-red.svg)
 
-Модуль CDN файловых ресурсов
+Модуль CDN файловых ресурсов 
+
 
 ## Установка
+
+Рекомендуется установить на отдельный сервер с отдельным доменом!
 
 ``` bash
 $ composer require baks-dev/files-cdn
@@ -18,7 +21,6 @@ $ composer require baks-dev/files-cdn
 ``` bash
 $ sudo mkdir <path_to_project>/public/upload
 $ chown -R unit:unit <path_to_project>/public/upload
-
 ``` 
 
 Генерируем дайджест пароля:
@@ -26,9 +28,10 @@ $ chown -R unit:unit <path_to_project>/public/upload
 ``` bash
 $ php bin/console security:hash-password
 ```
+
 ***
 
-В файле конфигурации `<path_to_cdn_project>/config/packages/security.php` указываем настройку указав результат хеширования пароля
+В файле конфигурации `<path_to_cdn_project>/config/packages/security.php` указываем настройку авторизации, указав результат хеширования пароля
 
 * `<user>` - пользователь
 * `<hash-password-result>` - результат хеширования пароля 
@@ -73,12 +76,11 @@ return static function(SecurityConfig $config) {
 * `<user>` - пользователь
 * `<you-plain-password>` - тектсовое представление пароля
 
-```
+``` dotenv
 ###> CDN ###
 CDN_HOST=cdn.example.host
 CDN_USER=<user>
 CDN_PASS=<you-plain-password>
-
 ```
 
 ## Лицензия ![License](https://img.shields.io/badge/MIT-green)
