@@ -43,8 +43,7 @@ class ImageUploadController
         Request $request,
         Filesystem $filesystem,
         LoggerInterface $logger,
-    ): Response
-    {
+    ): Response {
 
         $uploadDir = $upload.$request->get('dir');
 
@@ -59,7 +58,7 @@ class ImageUploadController
         }
 
 
-        /** Если существует директория - не создаем WEBP */
+        /** Если существует директория и файл - не создаем WEBP */
         if($filesystem->exists($uploadDir))
         {
             return new JsonResponse([
@@ -74,11 +73,13 @@ class ImageUploadController
         }
         catch(IOExceptionInterface)
         {
-            $logger->critical('Произошла ошибка при создании каталога',
+            $logger->critical(
+                'Произошла ошибка при создании каталога',
                 [
                     __FILE__.':'.__LINE__,
                     'dir' => $uploadDir
-                ]);
+                ]
+            );
 
             return new JsonResponse([
                 'status' => 500,
@@ -149,8 +150,7 @@ class ImageUploadController
     }
 
 
-
-    public function imageCreate($filepath) : mixed
+    public function imageCreate($filepath): mixed
     {
         $type = exif_imagetype($filepath); // [] if you don't have exif you could use getImageSize()
 
@@ -167,7 +167,8 @@ class ImageUploadController
             throw new FileException('Error type images');
         }
 
-        return match ($type) {
+        return match ($type)
+        {
             1 => imageCreateFromGif($filepath),
             2 => imageCreateFromJpeg($filepath),
             3 => imageCreateFromPng($filepath),
