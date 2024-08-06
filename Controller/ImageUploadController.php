@@ -106,7 +106,7 @@ class ImageUploadController
 
 
         /** Если имеется конвертируемый файл с указанной хеш-суммой  */
-        if(file_exists($uploadDir.'/original.webp'))
+        if(file_exists($uploadDir.'/small.webp'))
         {
             return new JsonResponse([
                 'status' => 200,
