@@ -57,9 +57,8 @@ class ImageUploadController
             ], 500);
         }
 
-
         /** Если существует директория и файл - не создаем WEBP */
-        if($filesystem->exists($uploadDir))
+        if($filesystem->exists($uploadDir.'/small.webp'))
         {
             return new JsonResponse([
                 'status' => 200,
@@ -104,15 +103,6 @@ class ImageUploadController
             ], 500);
         }
 
-
-        /** Если имеется конвертируемый файл с указанной хеш-суммой  */
-        if(file_exists($uploadDir.'/small.webp'))
-        {
-            return new JsonResponse([
-                'status' => 200,
-                'message' => 'success',
-            ], 200);
-        }
 
         $file->move($uploadDir, $file->getClientOriginalName());
         $img = $this->imageCreate($uploadDir.'/'.$file->getClientOriginalName());
