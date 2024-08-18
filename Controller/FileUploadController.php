@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AsController]
@@ -50,7 +50,7 @@ class FileUploadController extends AbstractController
 
         if(empty($uploadDir))
         {
-            $logger->critical('Необходимо передать параметр dir', [__FILE__.':'.__LINE__]);
+            $logger->critical('Необходимо передать параметр dir', [self::class.':'.__LINE__]);
 
             return new JsonResponse([
                 'status' => 500,
