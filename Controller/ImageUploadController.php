@@ -21,6 +21,7 @@ namespace BaksDev\Files\Cdn\Controller;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -40,9 +41,10 @@ class ImageUploadController
     #[Route('/cdn/upload/image', name: 'cdn.image.upload', methods: ['POST'])]
     public function index(
         #[Autowire('%kernel.project_dir%/public/upload/')] string $upload,
+        #[Target('filesCdnLogger')] LoggerInterface $logger,
         Request $request,
         Filesystem $filesystem,
-        LoggerInterface $logger,
+
     ): Response {
 
         $uploadDir = $upload.$request->get('dir');
