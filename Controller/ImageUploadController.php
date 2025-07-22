@@ -111,10 +111,10 @@ class ImageUploadController
 
         // Сохраняем оригинал
 
-        imagesavealpha($img, true);
-        imagepalettetotruecolor($img);
-        imagealphablending($img, false);
-        imagewebp($img, $uploadDir.'/original.webp', 100);
+        //        imagesavealpha($img, true);
+        //        imagepalettetotruecolor($img);
+        //        imagealphablending($img, false);
+        //        imagewebp($img, $uploadDir.'/original.webp', 100);
 
         $img_large = $this->resize($img, 1200);
         imagewebp($img_large, $uploadDir.'/large.webp', 80);
