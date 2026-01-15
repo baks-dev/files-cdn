@@ -18,6 +18,7 @@
 
 namespace BaksDev\Files\Cdn\Controller;
 
+use GdImage;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -107,7 +108,10 @@ class ImageUploadController
 
 
         $file->move($uploadDir, $file->getClientOriginalName());
+
+        /** @var GdImage $var */
         $img = $this->imageCreate($uploadDir.'/'.$file->getClientOriginalName());
+
 
         // Сохраняем оригинал
 
@@ -115,6 +119,7 @@ class ImageUploadController
         //        imagepalettetotruecolor($img);
         //        imagealphablending($img, false);
         //        imagewebp($img, $uploadDir.'/original.webp', 100);
+
 
         $img_large = $this->resize($img, 1200);
         imagewebp($img_large, $uploadDir.'/large.webp', 80);
@@ -177,8 +182,12 @@ class ImageUploadController
         $getWidth = imagesx($img);
         $getHeight = imagesy($img);
 
+
         $ratio = $height / $getHeight;
-        $width = $getWidth * $ratio;
+        $width = (int) ($getWidth * $ratio);
+
+
+
 
         $newImage = imagecreatetruecolor($width, $height);
         imagepalettetotruecolor($newImage);
